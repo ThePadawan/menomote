@@ -1,38 +1,101 @@
 import Vex from "vexflow";
+import pdfkit from "pdfkit";
+import blobStream from "blob-stream";
+import { saveAs } from "file-saver";
+import SVGtoPDF from "svg-to-pdfkit";
 
-const foo = () => {
-  var canvas = document.createElement("canvas");
-  canvas.id = "boo";
-  document.body.appendChild(canvas);
-  canvas.setAttribute("style", "display: none");
+import fs from "fs";
+// @ts-ignore
+// eslint-disable-next-line
+import Helvetica from "!!raw-loader!pdfkit/js/data/Helvetica.afm";
+
+const run = () => {
+  // notes |> render |> pdf
+};
+
+const pdf = (svgData: any) => {
+  // TODO Only do once at setup
+  // TODO Import the correct virtual fs in the first place instead of cross-loading it weirdly
+  fs.writeFileSync("data/Helvetica.afm", Helvetica);
+
+  let doc = new pdfkit();
+  const stream = doc.pipe(blobStream());
+
+  // Embed a font, set the font size, and render some text
+  // doc
+  //   .font("fonts/PalatinoBold.ttf")
+  //   .fontSize(25)
+  //   .text("Some text with an embedded font!", 100, 100);
+
+  // Add an image, constrain it to a given size, and center it vertically and horizontally
+  // doc.image("path/to/image.png", {
+  //   fit: [250, 300],
+  //   align: "center",
+  //   valign: "center",
+  // });
+
+  // Add another page
+  // doc.addPage().fontSize(25).text("Here is some vector graphics...", 100, 100);
+
+  SVGtoPDF(doc, svgData, 0, 0);
+
+  // Finalize PDF file
+  doc.end();
+
+  stream.on("finish", function () {
+    const blob = stream.toBlob("application/pdf");
+    saveAs(blob, "svg.pdf");
+  });
+};
+
+const render = (): string => {
+  const svg = document.createElement("svg");
+  svg.id = "boo";
+  document.body.appendChild(svg);
+  svg.setAttribute("style", "display: none");
 
   const VF = Vex.Flow;
 
-  // Create an SVG renderer and attach it to the DIV element named "vf".
-  const renderer = new VF.Renderer(canvas, VF.Renderer.Backends.CANVAS);
+  // @ts-ignore
+  const vf = new Vex.Flow.Factory({
+    renderer: {
+      backend: VF.Renderer.Backends.SVG,
+      elementId: "boo",
+      width: 500,
+      height: 200,
+    },
+  });
 
-  // Configure the rendering context.
-  renderer.resize(500, 500);
-  const context = renderer.getContext();
-  context.setFont("Arial", 10).setBackgroundFillStyle("#eed");
+  const score = vf.EasyScore();
+  const system = vf.System();
 
-  // Create a stave of width 400 at position 10, 40 on the canvas.
-  const stave = new VF.Stave(10, 40, 400);
+  system
+    .addStave({
+      voices: [
+        score.voice(score.notes("C#3/q, B3, A3, G#3", { clef: "bass" })),
+      ],
+    })
+    .addClef("bass")
+    .addTimeSignature("4/4");
 
-  // Add a clef and time signature.
-  stave.addClef("treble").addTimeSignature("4/4");
+  vf.draw();
+  // document.body.removeChild(svg);
 
-  // Connect it to the rendering context and draw!
-  stave.setContext(context).draw();
+  // TODO Scale it to A4.
+  // Think about measures per line, lines per page.
+  return svg.innerHTML;
+};
 
-  // TODO Convert this to PNG. Scale it to A4.
-  const data = (canvas as HTMLCanvasElement).toDataURL("image/png");
-  console.log(data);
+const foo = () => {
+  const data2 = render();
+  pdf(data2);
 
-  // Debug show
-  var img = document.createElement("img");
-  img.src = data;
-  document.body.appendChild(img);
+  // TODO: Add "seed"
+  // TODO: Add "preview"
+  // console.log(data2);
+  // const img = document.createElement("img");
+  // img.src = data2;
+  // document.body.appendChild(img);
 };
 
 export { foo };
