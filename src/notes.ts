@@ -3,11 +3,24 @@ import pdfkit from "pdfkit";
 import blobStream from "blob-stream";
 import { saveAs } from "file-saver";
 import SVGtoPDF from "svg-to-pdfkit";
+import chunk from "lodash/chunk";
 
 import fs from "fs";
 // @ts-ignore
 // eslint-disable-next-line
 import Helvetica from "!!raw-loader!pdfkit/js/data/Helvetica.afm";
+import { getRandomNotes } from "./rand";
+
+const DPI = 300;
+const MM_PER_INCH = 25.4;
+
+const A4_WIDTH = 210;
+const A4_HEIGHT = 297;
+
+const dimensions = () => {
+  const pixelPerMm = DPI / MM_PER_INCH;
+  return [A4_WIDTH * pixelPerMm, A4_HEIGHT * pixelPerMm];
+};
 
 const run = () => {
   // notes |> render |> pdf
@@ -18,7 +31,7 @@ const pdf = (svgData: any) => {
   // TODO Import the correct virtual fs in the first place instead of cross-loading it weirdly
   fs.writeFileSync("data/Helvetica.afm", Helvetica);
 
-  let doc = new pdfkit();
+  let doc = new pdfkit({ size: "A4" });
   const stream = doc.pipe(blobStream());
 
   // Embed a font, set the font size, and render some text
@@ -56,34 +69,75 @@ const render = (): string => {
 
   const VF = Vex.Flow;
 
+  const dims = dimensions();
+
   // @ts-ignore
   const vf = new Vex.Flow.Factory({
     renderer: {
       backend: VF.Renderer.Backends.SVG,
       elementId: "boo",
-      width: 500,
-      height: 200,
+      width: dims[0],
+      height: dims[1],
     },
   });
 
-  const score = vf.EasyScore();
-  const system = vf.System();
-
-  system
-    .addStave({
-      voices: [
-        score.voice(score.notes("C#3/q, B3, A3, G#3", { clef: "bass" })),
-      ],
-    })
-    .addClef("bass")
-    .addTimeSignature("4/4");
+  renderPage(vf);
 
   vf.draw();
-  // document.body.removeChild(svg);
+  document.body.removeChild(svg);
 
-  // TODO Scale it to A4.
-  // Think about measures per line, lines per page.
   return svg.innerHTML;
+};
+
+const renderPage = (vf: any) => {
+  const score = vf.EasyScore();
+
+  const leftBorder = 20;
+
+  let x = leftBorder;
+  let y = 20;
+
+  const notes = getRandomNotes(4 * 10 * 3);
+
+  // TODO Check if tree shaking works
+  const chunks = chunk(notes, 4).map((n) => {
+    return `${n[0]}/q, ${n[1]}, ${n[2]}, ${n[3]}`;
+  });
+
+  const makeSystem = (width: number) => {
+    const system = vf.System({
+      x: x,
+      y: y,
+      width: width,
+      spaceBetweenStaves: 20,
+    });
+    x += width;
+    return system;
+  };
+
+  const lineBreak = () => {
+    x = leftBorder;
+    y += 100;
+  };
+
+  const renderMeasure = (measureIndex: number) => {
+    const easyScore = chunks.shift();
+
+    const stave = makeSystem(240).addStave({
+      voices: [score.voice(score.notes(easyScore, { clef: "bass" }))],
+    });
+
+    if (measureIndex === 0) {
+      stave.addClef("bass");
+    }
+  };
+
+  for (let lineIndex = 0; lineIndex < 10; lineIndex++) {
+    for (let measureIndex = 0; measureIndex < 3; measureIndex++) {
+      renderMeasure(measureIndex);
+    }
+    lineBreak();
+  }
 };
 
 const foo = () => {
