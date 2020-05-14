@@ -97,12 +97,10 @@ const renderPage = (vf: any) => {
   let x = leftBorder;
   let y = 20;
 
-  const notes = getRandomNotes(4 * 10 * 3);
+  const notes = getRandomNotes(4 * 8 * 3);
 
   // TODO Check if tree shaking works
-  const chunks = chunk(notes, 4).map((n) => {
-    return `${n[0]}/q, ${n[1]}, ${n[2]}, ${n[3]}`;
-  });
+  const chunks = chunk(notes, 4);
 
   const makeSystem = (width: number) => {
     const system = vf.System({
@@ -117,14 +115,30 @@ const renderPage = (vf: any) => {
 
   const lineBreak = () => {
     x = leftBorder;
-    y += 100;
+    y += 130;
   };
 
   const renderMeasure = (measureIndex: number) => {
-    const easyScore = chunks.shift();
+    const chunk = chunks.shift()!;
+    const easyScore = `${chunk[0]}/q, ${chunk[1]}, ${chunk[2]}, ${chunk[3]}`;
+
+    const voices = [score.voice(score.notes(easyScore, { clef: "bass" }))];
+
+    const doIncludeAnswers = true;
+    if (doIncludeAnswers) {
+      const answers = chunk.map((n) => {
+        const r = new Vex.Flow.TextNote({ text: n, duration: "q" });
+        r.setJustification(Vex.Flow.TextNote.Justification.CENTER);
+        r.setLine(11);
+
+        return r;
+      });
+
+      voices.push(score.voice(answers));
+    }
 
     const stave = makeSystem(240).addStave({
-      voices: [score.voice(score.notes(easyScore, { clef: "bass" }))],
+      voices,
     });
 
     if (measureIndex === 0) {
@@ -132,7 +146,7 @@ const renderPage = (vf: any) => {
     }
   };
 
-  for (let lineIndex = 0; lineIndex < 10; lineIndex++) {
+  for (let lineIndex = 0; lineIndex < 8; lineIndex++) {
     for (let measureIndex = 0; measureIndex < 3; measureIndex++) {
       renderMeasure(measureIndex);
     }
