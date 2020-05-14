@@ -9,7 +9,7 @@ const click = () => {
 const App = () => {
   return (
     <div>
-      <button onClick={(_) => click()}>Go</button>
+      <button onClick={(_) => click()}>Generate sheet &amp; answer key</button>
     </div>
   );
 };
