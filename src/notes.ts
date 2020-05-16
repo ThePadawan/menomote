@@ -2,10 +2,10 @@ import { getRandomNotes } from "./rand";
 import { pdf } from "./pdf";
 import { render } from "./render";
 
-const foo = () => {
+const run = (): Promise<string> => {
   const reducer = (acc: any, curr: (x: any) => any) => (acc = curr(acc));
 
-  [getRandomNotes, render, pdf].reduce(reducer, 4 * 8 * 3);
+  return [getRandomNotes, render, pdf].reduce(reducer, 4 * 8 * 3);
 
   // TODO: Add "seed"
   // TODO: Add "preview"
@@ -15,4 +15,4 @@ const foo = () => {
   // document.body.appendChild(img);
 };
 
-export { foo };
+export { run };

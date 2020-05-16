@@ -12,7 +12,7 @@ const setup = () => {
   fs.writeFileSync("data/Helvetica.afm", Helvetica);
 };
 
-const pdf = (svgs: string[]) => {
+const pdf = (svgs: string[]): Promise<string> => {
   setup();
 
   let doc = new pdfkit({ size: "A4", autoFirstPage: false });
@@ -26,9 +26,12 @@ const pdf = (svgs: string[]) => {
 
   doc.end();
 
-  stream.on("finish", function () {
-    const blob = stream.toBlob("application/pdf");
-    saveAs(blob, "svg.pdf");
+  return new Promise((resolve, reject) => {
+    stream.on("finish", function () {
+      const blob = stream.toBlob("application/pdf");
+      saveAs(blob, "svg.pdf");
+      resolve(stream.toBlobURL());
+    });
   });
 };
 
