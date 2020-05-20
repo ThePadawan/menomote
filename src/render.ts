@@ -20,7 +20,7 @@ const renderPage = (notes: string[], doIncludeAnswers: boolean) => {
   const svg = document.createElement("svg");
   svg.id = "boo";
   document.body.appendChild(svg);
-  svg.setAttribute("style", "display: none");
+  svg.setAttribute("style", "visibility: hidden");
 
   const dims = dimensions();
 
