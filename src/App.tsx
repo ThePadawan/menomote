@@ -3,9 +3,11 @@ import "./App.css";
 import { run } from "./notes";
 
 const click = (setFallbackUrl: (s: string | null) => void) => {
-  run().then((blobUrl) => {
-    setFallbackUrl(blobUrl);
-  });
+  setTimeout(() => {
+    run().then((blobUrl) => {
+      setFallbackUrl(blobUrl);
+    });
+  }, 0);
 };
 
 const App = () => {
@@ -15,11 +17,13 @@ const App = () => {
       <button onClick={(_) => click(setFallbackUrl)}>
         Generate sheet &amp; answer key
       </button>
-      {fallbackUrl && (
-        <a href={fallbackUrl} download="svg.pdf">
-          File not downloading? Try this link instead.
-        </a>
-      )}
+      <div>
+        {fallbackUrl && (
+          <a href={fallbackUrl} download="svg.pdf">
+            File not downloading? Try this link instead.
+          </a>
+        )}
+      </div>
     </div>
   );
 };

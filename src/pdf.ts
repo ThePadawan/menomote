@@ -15,7 +15,9 @@ const setup = () => {
 const pdf = (svgs: string[]): Promise<string> => {
   setup();
 
-  let doc = new pdfkit({ size: "A4", autoFirstPage: false });
+  // "bufferPages" allows us to only flush pages exactly once on doc.end()
+  // instead of every time a page is added.
+  let doc = new pdfkit({ size: "A4", autoFirstPage: false, bufferPages: true });
 
   const stream = doc.pipe(blobStream());
 
