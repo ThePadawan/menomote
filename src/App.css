@@ -6,3 +6,11 @@
   min-height: 100vh;
   flex-flow: column;
 }
+
+.menomote-extras {
+  margin-top: 2rem;
+}
+
+.menomote-extras__link {
+  color: #000;
+}

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import "./App.css";
 import { run } from "./notes";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
 
 const click = (setFallbackUrl: (s: string | null) => void) => {
   setTimeout(() => {
@@ -26,6 +28,14 @@ const App = () => {
               File not downloading? Try this link instead.
             </a>
           )}
+        </div>
+        <div className="menomote-extras">
+          <a
+            href="//github.com/ThePadawan/menomote"
+            className="menomote-extras__link"
+          >
+            <FontAwesomeIcon icon={faGithub} />
+          </a>
         </div>
       </div>
     </>

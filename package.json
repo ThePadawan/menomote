@@ -51,6 +51,9 @@
     ]
   },
   "devDependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.28",
+    "@fortawesome/free-brands-svg-icons": "^5.13.0",
+    "@fortawesome/react-fontawesome": "^0.1.9",
     "raw-loader": "^4.0.1",
     "react-app-rewired": "^2.1.6",
     "source-map-explorer": "^2.4.2",
